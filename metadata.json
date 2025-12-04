@@ -1,0 +1,5 @@
+{
+  "name": "Intelligent Exam Solver",
+  "description": "An AI-powered tool to solve past exam questions based strictly on uploaded course materials, featuring detailed solutions and quick review modes.",
+  "requestFramePermissions": []
+}
