@@ -8,6 +8,7 @@ export interface UploadedFile {
 export enum ResultMode {
   SOLVE = 'SOLVE',
   REVIEW = 'REVIEW',
+  SUMMARY = 'SUMMARY',
 }
 
 export interface ProcessingResult {
@@ -18,6 +19,7 @@ export interface ProcessingResult {
 
 export interface ProcessingState {
   isLoading: boolean;
+  loadingMode: ResultMode | null;
   error: string | null;
   result: ProcessingResult | null;
 }

@@ -11,101 +11,165 @@ const fileToPart = (file: UploadedFile) => {
   };
 };
 
-export const generateExamSolution = async (
-  courseFiles: UploadedFile[],
-  questionFiles: UploadedFile[],
+export async function* generateContentStream(
+  filesA: UploadedFile[],
+  filesB: UploadedFile[], // Optional for Summary mode
   mode: ResultMode
-): Promise<string> => {
+): AsyncGenerator<string, void, unknown> {
   
   if (!process.env.API_KEY) {
     throw new Error("API Key is missing. Please set the API_KEY environment variable.");
   }
 
-  // Create new instance per request to ensure fresh config if needed
+  // Create new instance per request
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
-  const modelName = 'gemini-2.5-flash'; // Good balance of speed and context window for docs
+  // Using flash model for speed
+  const modelName = 'gemini-2.5-flash'; 
 
-  const courseParts = courseFiles.map(fileToPart);
-  const questionParts = questionFiles.map(fileToPart);
+  const partsA = filesA.map(fileToPart);
+  const partsB = filesB.map(fileToPart);
+  
+  const allParts = [...partsA, ...partsB];
 
   let systemInstruction = "";
   let prompt = "";
 
   if (mode === ResultMode.SOLVE) {
-    systemInstruction = `You are an expert academic tutor and exam solver. 
-    Your goal is to solve past exam questions strictly based on the provided course material.
+    systemInstruction = `You are an Intelligent Exam Solver and Academic Tutor.
+    Your goal is to solve past exam questions strictly based on the provided Course Material.
     
-    RULES:
-    1. STRICTLY use the provided Course Material to answer.
-    2. Identify all questions from the 'Past Questions' files.
-    3. If a question appears multiple times, solve it only ONCE (deduplicate).
-    4. Format the output clearly. Use Bold for Questions.
-    5. Provide detailed, well-explained answers.
-    6. If the answer is not in the material, state that it cannot be found in the provided notes.
+    CRITICAL INSTRUCTIONS:
+    1. SOURCE MATERIAL: Use ONLY the provided 'Course Material' to derive answers.
+    2. QUESTION EXTRACTION: Identify questions from the 'Past Questions' files.
+    3. DEDUPLICATION: If a question appears multiple times, list it ONLY ONCE.
+    4. FORMATTING REQUIREMENTS (Strictly follow this structure with BOLDING):
+    
+    UNIT [Number/Name if identifiable]
+    
+    **[Number]. [Question Text]?** ([Frequency/Marks])
+    [Detailed Answer: Provide a comprehensive explanation found in the notes.]
+    
+    **[Number]. [Next Question]?**
+    [Detailed Answer...]
     `;
 
-    prompt = `
-    Using the attached COURSE MATERIAL, please solve the questions found in the attached PAST QUESTIONS files.
-    
-    Output Format Goal:
-    
-    1. Question Text? (Year/Marks if available)
-    [Detailed Answer Paragraphs...]
+    prompt = `Analyze the attached PAST QUESTIONS and COURSE MATERIAL. Generate a comprehensive solution document. Identify unique questions and provide detailed answers based on the material. Ensure Question texts are bolded using ** markers.`;
 
-    2. Next Question?
-    [Detailed Answer Paragraphs...]
+  } else if (mode === ResultMode.REVIEW) {
+    // REVIEW MODE (Q&A style)
+    systemInstruction = `You are a Quick Review Study Assistant.
+    Your goal is to create a rapid-fire Q&A study sheet.
+    
+    CRITICAL INSTRUCTIONS:
+    1. Extract questions from 'Past Questions'.
+    2. Answer using 'Course Material'.
+    3. EXTREMELY IMPORTANT: Answers must be SHORT, CONCISE, and EASY TO UNDERSTAND.
+    4. Deduplicate questions.
+    5. FORMAT: Strictly use the "**Q:** ... **A:** ..." format.
+    
+    FORMATTING:
+    **Q:** [Question?]
+    **A:** [Short, punchy answer.]
     `;
 
+    prompt = `Create a Quick Review Q&A list. Keep answers very short and simple. Use **Q:** and **A:** markers for bolding.`;
+  } else if (mode === ResultMode.SUMMARY) {
+    // SUMMARY MODE
+    systemInstruction = `You are an Expert Academic Simplifier.
+    Your goal is to provide a comprehensive summary of the uploaded document, analyzing it Topic by Topic, but using VERY SIMPLE, PLAIN, and EASY-TO-UNDERSTAND language.
+    
+    CRITICAL INSTRUCTIONS:
+    1. **Simplicity**: Write as if explaining to a beginner or high school student. Avoid complex jargon or explain it immediately in simple terms.
+    2. **Structure**: Break down the document into logical **Topics/Sections**.
+    3. **Content**: For EACH major topic or concept identified, you MUST provide the following details where applicable and BOLD the labels using **:
+       - **Definition**: A simple, easy-to-grasp definition of the concept.
+       - **Key Features**: Key attributes described simply.
+       - **Types/Classifications**: Different types with simple descriptions.
+       - **Advantages**: Benefits or strengths (simplified).
+       - **Disadvantages**: Limitations or weaknesses (simplified).
+       - **Simple Explanation**: A clear, conversational paragraph explaining what this concept means in plain English.
+    
+    FORMATTING REQUIREMENTS:
+    
+    **[Document Title]**
+    
+    **Executive Overview**
+    [A simple high-level summary of what this document is about.]
+    
+    ---
+    
+    **TOPIC: [Topic Name]**
+    
+    *   **Definition**: [Simple definition]
+    *   **Key Features**:
+        *   [Feature 1]
+        *   [Feature 2]
+    *   **Types**:
+        *   **[Type Name]**: [Simple Description]
+    *   **Advantages**:
+        *   [Advantage 1]
+    *   **Disadvantages**:
+        *   [Disadvantage 1]
+    *   **Simple Explanation**:
+        [A paragraph explaining the concept simply.]
+    
+    ---
+    
+    (Repeat for all major topics)
+    
+    **Conclusion**
+    [Final simple summary]
+    `;
+    
+    prompt = `Perform a topic-by-topic analysis of the attached document. Include definitions, types, features, advantages, and disadvantages. Use **bold markers** for headers. CRITICAL: Make all text, definitions, and explanations EXTREMELY EASY TO READ and UNDERSTAND.`;
+  }
+
+  // Construct content parts based on mode
+  let contentsParts: any[] = [];
+  
+  if (mode === ResultMode.SUMMARY) {
+    // For summary, we only expect 'filesA' (the document to summarize)
+    contentsParts = [
+      { text: "--- DOCUMENT TO SUMMARIZE ---" },
+      ...partsA,
+      { text: prompt }
+    ];
   } else {
-    // REVIEW MODE (Flashcard/Q&A style)
-    systemInstruction = `You are a study assistant creating a Quick Review sheet.
-    
-    RULES:
-    1. Extract questions from the 'Past Questions' files.
-    2. Answer them using the 'Course Material'.
-    3. Keep answers concise, punchy, and easy to memorize.
-    4. Deduplicate similar questions.
-    5. STRICTLY follow the "Q: ... A: ..." format.
-    `;
-
-    prompt = `
-    Create a Quick Review Q&A list based on the attached files.
-    
-    Output Format strictly like this:
-    
-    Q: [Question text]
-    A: [Concise answer]
-    
-    Q: [Question text]
-    A: [Concise answer]
-    `;
+    // For Solve/Review, we expect both course material (A) and past questions (B)
+    contentsParts = [
+      { text: "--- COURSE MATERIAL ---" },
+      ...partsA,
+      { text: "--- PAST QUESTIONS ---" },
+      ...partsB,
+      { text: prompt }
+    ];
   }
 
   try {
-    const response = await ai.models.generateContent({
+    const responseStream = await ai.models.generateContentStream({
       model: modelName,
       contents: [
         {
           role: 'user',
-          parts: [
-            { text: "--- COURSE MATERIAL FILES ---" },
-            ...courseParts,
-            { text: "--- PAST QUESTION FILES ---" },
-            ...questionParts,
-            { text: prompt }
-          ]
+          parts: contentsParts
         }
       ],
       config: {
         systemInstruction: systemInstruction,
-        temperature: 0.3, // Lower temperature for more factual/consistent answers
+        temperature: 0.3, 
       }
     });
 
-    return response.text || "No response generated.";
+    for await (const chunk of responseStream) {
+      const text = chunk.text;
+      if (text) {
+        yield text;
+      }
+    }
+
   } catch (error: any) {
     console.error("Gemini API Error:", error);
     throw new Error(error.message || "Failed to generate content.");
   }
-};
+}
