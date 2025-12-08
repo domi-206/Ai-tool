@@ -41,24 +41,24 @@ export async function* generateContentStream(
     
     CRITICAL INSTRUCTIONS:
     1. SOURCE MATERIAL: Use ONLY the provided 'Course Material' to derive answers.
-    2. QUESTION EXTRACTION: Identify questions from the 'Past Questions' files.
-    3. DEDUPLICATION: If a question appears multiple times, list it ONLY ONCE.
+    2. QUESTION EXTRACTION: Identify questions from the 'Past Questions' files. Look for dates or years in filenames or document headers to identify when questions appeared.
+    3. DEDUPLICATION: If a question appears multiple times, list it ONLY ONCE, but track the years and count.
     4. FORMATTING REQUIREMENTS (Strictly follow this structure with BOLDING):
     
     UNIT [Number/Name if identifiable]
     
-    **[Number]. [Question Text]?** ([Frequency/Marks])
+    **[Number]. [Question Text]?** (Years: [List years found e.g. 2021, 2023], Frequency: [Number of times] times)
     [Detailed Answer: Provide a comprehensive explanation found in the notes.]
     
-    **[Number]. [Next Question]?**
+    **[Number]. [Next Question]?** (Years: [e.g. 2022], Frequency: 1 time)
     [Detailed Answer...]
     `;
 
-    prompt = `Analyze the attached PAST QUESTIONS and COURSE MATERIAL. Generate a comprehensive solution document. Identify unique questions and provide detailed answers based on the material. Ensure Question texts are bolded using ** markers.`;
+    prompt = `Analyze the attached PAST QUESTIONS and COURSE MATERIAL. Generate a comprehensive solution document. Identify unique questions and provide detailed answers based on the material. Ensure Question texts are bolded using ** markers. You MUST append the Years and Frequency at the end of every bolded question text.`;
 
   } else if (mode === ResultMode.REVIEW) {
-    // REVIEW MODE (Q&A style)
-    systemInstruction = `You are a Quick Review Study Assistant.
+    // REVIEW MODE (Flashcards)
+    systemInstruction = `You are a Flashcard Generator.
     Your goal is to create a rapid-fire Q&A study sheet.
     
     CRITICAL INSTRUCTIONS:
@@ -73,35 +73,38 @@ export async function* generateContentStream(
     **A:** [Short, punchy answer.]
     `;
 
-    prompt = `Create a Quick Review Q&A list. Keep answers very short and simple. Use **Q:** and **A:** markers for bolding.`;
+    prompt = `Create a Flashcard Q&A list. Keep answers very short and simple. Use **Q:** and **A:** markers for bolding.`;
   } else if (mode === ResultMode.SUMMARY) {
     // SUMMARY MODE
     systemInstruction = `You are an Expert Academic Simplifier.
-    Your goal is to provide a comprehensive summary of the uploaded document, analyzing it Topic by Topic, but using VERY SIMPLE, PLAIN, and EASY-TO-UNDERSTAND language.
+    Your absolute priority is to explain the uploaded document in the SIMPLEST, MOST ACCESSIBLE language possible.
+    Imagine you are teaching a beginner who has zero prior knowledge of the subject.
     
     CRITICAL INSTRUCTIONS:
-    1. **Simplicity**: Write as if explaining to a beginner or high school student. Avoid complex jargon or explain it immediately in simple terms.
-    2. **Structure**: Break down the document into logical **Topics/Sections**.
-    3. **Content**: For EACH major topic or concept identified, you MUST provide the following details where applicable and BOLD the labels using **:
-       - **Definition**: A simple, easy-to-grasp definition of the concept.
-       - **Key Features**: Key attributes described simply.
-       - **Types/Classifications**: Different types with simple descriptions.
-       - **Advantages**: Benefits or strengths (simplified).
-       - **Disadvantages**: Limitations or weaknesses (simplified).
-       - **Simple Explanation**: A clear, conversational paragraph explaining what this concept means in plain English.
-    
+    1. **EXTREME SIMPLICITY**: Use plain English. Short sentences. No academic jargon. If a technical term is necessary, define it immediately in simple words.
+    2. **Explain Like I'm 5**: Your goal is clarity. Make concepts sound easy and friendly.
+    3. **Topic-by-Topic Breakdown**: Go through the document section by section.
+    4. **Content**: For EACH major topic, you MUST provide these details (if applicable) and BOLD the labels using **:
+       - **Definition**: A crystal-clear, easy-to-read definition.
+       - **Simple Explanation**: A conversational paragraph explaining what this really means in everyday life.
+       - **Key Features**: The main characteristics, listed simply.
+       - **Types**: Kinds or categories, explained simply.
+       - **Advantages**: The good parts (pros).
+       - **Disadvantages**: The bad parts (cons).
+
     FORMATTING REQUIREMENTS:
     
     **[Document Title]**
     
     **Executive Overview**
-    [A simple high-level summary of what this document is about.]
+    [A very simple summary of the whole document.]
     
     ---
     
     **TOPIC: [Topic Name]**
     
-    *   **Definition**: [Simple definition]
+    *   **Definition**: [The simplest definition possible]
+    *   **Simple Explanation**: [A paragraph that makes it click for a beginner]
     *   **Key Features**:
         *   [Feature 1]
         *   [Feature 2]
@@ -111,18 +114,16 @@ export async function* generateContentStream(
         *   [Advantage 1]
     *   **Disadvantages**:
         *   [Disadvantage 1]
-    *   **Simple Explanation**:
-        [A paragraph explaining the concept simply.]
     
     ---
     
     (Repeat for all major topics)
     
     **Conclusion**
-    [Final simple summary]
+    [Final wrap-up]
     `;
     
-    prompt = `Perform a topic-by-topic analysis of the attached document. Include definitions, types, features, advantages, and disadvantages. Use **bold markers** for headers. CRITICAL: Make all text, definitions, and explanations EXTREMELY EASY TO READ and UNDERSTAND.`;
+    prompt = `Analyze the attached document. Break it down topic by topic. For every topic, provide a Definition, Simple Explanation, Features, Types, Advantages, and Disadvantages. Use **bold markers** for headers. CRITICAL: Your output MUST be extremely easy to read. Simplify everything for a beginner.`;
   }
 
   // Construct content parts based on mode

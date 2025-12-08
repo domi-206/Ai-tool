@@ -277,7 +277,7 @@ const App: React.FC = () => {
                     className="group relative flex items-center justify-center py-4 px-6 border border-transparent text-lg font-bold rounded-xl text-white bg-indigo-500 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:-translate-y-0.5"
                   >
                     <Layers className="w-6 h-6 mr-3 text-white/90 group-hover:rotate-12 transition-transform" />
-                    Quick Review
+                    Flashcards
                   </button>
                 </div>
               </>

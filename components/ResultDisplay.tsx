@@ -43,7 +43,7 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({ result, onReset, sourceFi
     let title = 'Document';
     switch (result.mode) {
       case ResultMode.SOLVE: title = 'Exam Solutions'; break;
-      case ResultMode.REVIEW: title = 'Quick Review Flashcards'; break;
+      case ResultMode.REVIEW: title = 'Flashcards'; break;
       case ResultMode.SUMMARY: title = 'Document Summary'; break;
     }
     
@@ -172,19 +172,25 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({ result, onReset, sourceFi
   let headerColorClass = 'bg-green-50 border-green-100';
   let titleColorClass = 'text-green-900';
   let btnColorClass = 'bg-green-600 hover:bg-green-700';
+  let animationClass = '';
 
   if (isReviewMode) {
     headerColorClass = 'bg-indigo-50 border-indigo-100';
     titleColorClass = 'text-indigo-900';
     btnColorClass = 'bg-indigo-600 hover:bg-indigo-700';
+    animationClass = 'animate-shuffle-in'; // Shuffling entrance
   } else if (isSummaryMode) {
     headerColorClass = 'bg-blue-50 border-blue-100';
     titleColorClass = 'text-blue-900';
     btnColorClass = 'bg-blue-600 hover:bg-blue-700';
+    animationClass = 'animate-focus-in'; // Blur/Focus entrance
+  } else {
+    // SOLVE Mode
+    animationClass = 'animate-unfold-up'; // Pop/Unfold entrance
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden flex flex-col max-h-[800px]">
+    <div className={`bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden flex flex-col max-h-[800px] ${animationClass}`}>
       {/* Header */}
       <div className={`px-6 py-4 flex justify-between items-center border-b ${headerColorClass}`}>
         <div className="flex items-center space-x-4">
@@ -197,7 +203,7 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({ result, onReset, sourceFi
           </button>
           <div>
             <h2 className={`text-xl font-bold ${titleColorClass}`}>
-              {isReviewMode ? 'Quick Review Flashcards' : isSummaryMode ? 'Document Summary' : 'Exam Solutions'}
+              {isReviewMode ? 'Flashcards' : isSummaryMode ? 'Document Summary' : 'Exam Solutions'}
             </h2>
             <p className="text-sm text-gray-500">Generated from your uploaded materials</p>
           </div>

@@ -1,0 +1,124 @@
+/* Custom Scrollbar for results */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Animations for Loading States - SPEEDED UP */
+
+/* SOLVE: Orbit Animation */
+@keyframes orbit {
+  0% { transform: rotate(0deg) translateX(60px) rotate(0deg); }
+  100% { transform: rotate(360deg) translateX(60px) rotate(-360deg); }
+}
+.animate-orbit-1 {
+  animation: orbit 1.5s linear infinite; /* Faster duration */
+}
+.animate-orbit-2 {
+  animation: orbit 1.5s linear infinite; /* Faster duration */
+  animation-delay: -0.75s;
+}
+
+/* REVIEW: Card Shuffle Animation */
+@keyframes card-shuffle-top {
+  0% { transform: translateY(0) scale(1); z-index: 10; }
+  50% { transform: translateY(-40px) translateX(40px) rotate(10deg); }
+  100% { transform: translateY(0) scale(0.95); z-index: 0; }
+}
+.animate-card-shuffle {
+  animation: card-shuffle-top 0.6s ease-in-out infinite; /* Faster duration */
+}
+
+/* SUMMARY: Scanner Animation */
+@keyframes scan-move {
+  0%, 100% { top: 0%; opacity: 0; }
+  10% { opacity: 1; }
+  50% { top: 100%; opacity: 1; }
+  90% { opacity: 1; }
+}
+.animate-scan {
+  animation: scan-move 2s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 15px rgba(34, 197, 94, 0.2); }
+  50% { box-shadow: 0 0 30px rgba(34, 197, 94, 0.6); }
+}
+.animate-pulse-glow {
+  animation: pulse-glow 1.5s infinite;
+}
+
+/* Result Fade In */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in {
+  animation: fade-in 0.4s ease-out forwards;
+}
+
+/* --- CREATIVE RESULT ENTRANCE ANIMATIONS --- */
+
+/* FLASHCARDS: Shuffle Deck Effect */
+@keyframes shuffle-in {
+  0% { 
+    opacity: 0; 
+    transform: translateX(-120px) rotate(-15deg) scale(0.85);
+  }
+  50% { 
+    opacity: 1; 
+    transform: translateX(15px) rotate(3deg) scale(1.02);
+  }
+  75% {
+     transform: translateX(-5px) rotate(-1deg);
+  }
+  100% { 
+    opacity: 1; 
+    transform: translateX(0) rotate(0) scale(1);
+  }
+}
+.animate-shuffle-in {
+  animation: shuffle-in 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transform-origin: center center;
+}
+
+/* SOLVER: Pop & Unfold Effect */
+@keyframes unfold-up {
+  0% { 
+    opacity: 0; 
+    transform: scaleY(0.9) translateY(30px); 
+  }
+  100% { 
+    opacity: 1; 
+    transform: scaleY(1) translateY(0); 
+  }
+}
+.animate-unfold-up {
+  animation: unfold-up 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* SUMMARY: Blur & Focus Effect */
+@keyframes focus-in {
+  0% { 
+    opacity: 0; 
+    filter: blur(16px); 
+    transform: scale(0.96);
+  }
+  100% { 
+    opacity: 1; 
+    filter: blur(0); 
+    transform: scale(1);
+  }
+}
+.animate-focus-in {
+  animation: focus-in 0.8s ease-out;
+}
