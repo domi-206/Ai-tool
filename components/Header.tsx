@@ -1,5 +1,6 @@
+
 import React from 'react';
-import { BrainCircuit, FileText, Moon, Sun } from 'lucide-react';
+import { BrainCircuit, FileText, Moon, Sun, Cpu } from 'lucide-react';
 
 interface HeaderProps {
   activeView: 'summary' | 'solver';
@@ -41,8 +42,8 @@ const Header: React.FC<HeaderProps> = ({ activeView, onViewChange, isDark, toggl
                   : 'text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
               }`}
             >
-              <BrainCircuit className="w-4 h-4 mr-2" />
-              Exam Solver
+              <Cpu className="w-4 h-4 mr-2" />
+              AI Engine
             </button>
           </div>
 

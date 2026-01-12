@@ -21,32 +21,32 @@ export async function* generateContentStream(
   }
 
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-  // Using gemini-3-pro-preview for complex academic tasks as per instructions
   const model = 'gemini-3-pro-preview';
 
   const partsA = filesA.map(fileToPart);
   const partsB = filesB.map(fileToPart);
 
-  let systemInstruction = "";
-  let prompt = "";
+  // Core formatting: No hashtags. Double asterisks for bolding. Hierarchical numbers.
+  let systemInstruction = "CRITICAL FORMATTING RULE: NEVER use hashtags (#). For headers, use hierarchical numbering (1.0, 1.1). Use double asterisks (e.g., **important text**) to BOLD key points, names, titles, years, specific events, and critical terms. Visual emphasis is mandatory for all key information.";
 
   if (mode === ResultMode.SOLVE) {
-    systemInstruction = `You are an Intelligent Exam Solver and Academic Tutor. Solve past exam questions strictly based on the provided Course Material. Differentiate between unique questions and list their frequency and years. Use **Bold** for question texts.`;
-    prompt = `Analyze the attached PAST QUESTIONS and COURSE MATERIAL. Generate a comprehensive solution document. Identify unique questions and provide detailed answers based on the material. Ensure Question texts are bolded using ** markers.`;
+    systemInstruction += ` You are an Intelligent Exam Solver. Solve questions based on the provided material with maximum detail and deep academic reasoning. BOLD all key terms, years, names, and specific answers.`;
   } else if (mode === ResultMode.REVIEW) {
-    systemInstruction = `You are a FlashCard Doc Generator. Extract critical facts, formulas, and definitions. Use **Q:** and **A:** markers.`;
-    prompt = `Distill the provided COURSE MATERIAL into a high-yield FlashCard Doc. Focus on essential concepts only.`;
+    // FlashDoc: Exhaustive coverage, small bits, straight to point.
+    systemInstruction += ` You are a FlashCard Doc Generator (FlashDoc). Your goal is to provide EXHAUSTIVE coverage of the source material. You MUST cover EVERY SINGLE topic, sub-topic, definition, and concept found in the document—no matter how small. Provide an extremely high volume of content consisting of many small, direct Questions and Answers. HOWEVER, keep each entry extremely CONCISE and STRAIGHT TO THE POINT. Focus: Rapid recall and memorization. BOLD every key term, name, date, and the direct answer part using **. If the document is long, produce a very long list of entries to ensure 100% material coverage. Do not skip details; turn every detail into a small flash-point.`;
   } else if (mode === ResultMode.SUMMARY) {
-    systemInstruction = `You are an Expert Academic Simplifier. Priority: Explain in the SIMPLEST language possible. Breakdown topic by topic with Definition, Explanation, Features, etc. Use **Bold** for headers.`;
-    prompt = `Analyze the attached document. Break it down topic by topic. For every topic, provide a Definition, Simple Explanation, Features, Types, Advantages, and Disadvantages.`;
+    systemInstruction += ` You are an Expert Academic Simplifier. Breakdown every topic in extreme detail. For every topic, provide: 1. Deep Definition, 2. Contextual Explanation (be verbose), 3. Features, 4. Types, 5. Advantages/Disadvantages. BOLD key concepts, names, and events throughout.`;
   }
 
   let contentsParts: any[] = [];
   if (mode === ResultMode.SUMMARY || mode === ResultMode.REVIEW) {
+    const modePrompt = mode === ResultMode.SUMMARY 
+      ? "Provide an extremely long and detailed summary." 
+      : "Provide an EXHAUSTIVE FlashDoc: Generate hundreds of small, straight-to-the-point Q&A pairs if necessary to cover every single sentence and concept of the text. BOLD all key info. Maximize volume and coverage.";
     contentsParts = [
-      { text: `--- SOURCE MATERIAL FOR ${mode} ---` },
+      { text: `--- SOURCE MATERIAL ---` },
       ...partsA,
-      { text: prompt }
+      { text: `Analyze this material and generate a ${mode} mode response. ${modePrompt} NO hashtags. Use ** for bolding.` }
     ];
   } else {
     contentsParts = [
@@ -54,22 +54,17 @@ export async function* generateContentStream(
       ...partsA,
       { text: "--- PAST QUESTIONS ---" },
       ...partsB,
-      { text: prompt }
+      { text: "Solve all questions in depth. BOLD key years, names, and concepts. NO hashtags." }
     ];
   }
 
   try {
     const responseStream = await ai.models.generateContentStream({
       model: model,
-      contents: [
-        {
-          role: 'user',
-          parts: contentsParts
-        }
-      ],
+      contents: [{ role: 'user', parts: contentsParts }],
       config: {
         systemInstruction: systemInstruction,
-        temperature: 0.3, 
+        temperature: 0.1, // Lower temperature for more consistent, factual extraction
       }
     });
 
@@ -77,7 +72,6 @@ export async function* generateContentStream(
       const text = chunk.text;
       if (text) yield text;
     }
-
   } catch (error: any) {
     console.error("Gemini API Error:", error);
     throw new Error(error.message || "Failed to generate content.");
