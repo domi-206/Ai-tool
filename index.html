@@ -6,10 +6,31 @@
     <title>Intelligent Exam Solver</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              primary: {
+                DEFAULT: '#07bc0c',
+                light: '#09e00f',
+                dark: '#058a09',
+              },
+            },
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+            },
+          }
+        }
+      }
+    </script>
     <style>
       body {
-        font-family: 'Inter', sans-serif;
-        background-color: #f3f4f6;
+        transition: background-color 0.3s ease, color 0.3s ease;
+      }
+      .dark body {
+        background-color: #0b0f1a;
       }
     </style>
   <script type="importmap">
@@ -25,7 +46,7 @@
 }
 </script>
 </head>
-  <body>
+  <body class="bg-gray-50 text-gray-900">
     <div id="root"></div>
   </body>
 </html>
