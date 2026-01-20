@@ -29,23 +29,19 @@ export async function* generateContentStream(
   const partsB = filesB.map(fileToPart);
 
   let systemInstruction = `CRITICAL FORMATTING RULES:
-1. NEVER use hashtags (#) for formatting.
-2. Use hierarchical numbering for subheadings (e.g., 1.0, 1.1, 2.0). 
-3. Start major sections with 'TOPIC: [Topic Name]' to identify high-level themes.
-4. Use double asterisks (**text**) to BOLD all of the following: 
-   - Important Names and Titles
-   - Dates and Specific Years
-   - Key Answers and Specific Figures
-   - Technical Terms and Core Definitions
-   - Crucial Conclusions
-5. Aim for HIGH visual density of bold text to enable rapid "speed-reading".`;
+1. NEVER use hashtags (#).
+2. Use hierarchical numbering for subheadings (1.0, 1.1, 2.0).
+3. Start major sections with 'TOPIC: [Name]'.
+4. BOLDing: Use double asterisks (**text**) for important terms, names, and dates.
+5. HIGHLIGHTING: Use double equals (==text==) for CRITICAL INFORMATION that requires immediate user attention.
+6. DETAIL LEVEL: Provide EXHAUSTIVE, high-density content. Avoid brevity. If summarizing, provide deep definitions, background context, and detailed examples for every point.`;
 
   if (mode === ResultMode.SOLVE) {
-    systemInstruction += `\nROLE: Intelligent Exam Solver. Provide deep academic reasoning. BOLD every final answer and the names of theories/scholars mentioned.`;
+    systemInstruction += `\nROLE: Expert Academic Solver. Provide deep reasoning and step-by-step logic. HIGHLIGHT (==text==) the definitive final answer for every question.`;
   } else if (mode === ResultMode.REVIEW) {
-    systemInstruction += `\nROLE: FlashCard Generator. Provide direct Q&A pairs. BOLD the entire 'Answer' part of every card for maximum visibility.`;
+    systemInstruction += `\nROLE: Comprehensive Study Pack Creator. BOLD terms and HIGHLIGHT crucial formulas or key recall points.`;
   } else if (mode === ResultMode.SUMMARY) {
-    systemInstruction += `\nROLE: Academic Simplifier. Use numbered lists. BOLD all key takeaways and definitions.`;
+    systemInstruction += `\nROLE: High-Detail Academic Simplifier. Expand significantly on every concept found. Use HIGHLIGHTS for the most essential 'must-know' takeaways.`;
   }
 
   let contentsParts: any[] = [];
@@ -53,7 +49,7 @@ export async function* generateContentStream(
     contentsParts = [
       { text: `--- SOURCE MATERIAL ---` },
       ...partsA,
-      { text: `Perform a deep ${mode} analysis. Adhere to all BOLDING and TOPIC rules. Identify every key date and name.` }
+      { text: `Perform a deep ${mode} analysis with MAXIMUM detail. Ensure every key concept is explained thoroughly. Use ==highlights== for critical info.` }
     ];
   } else {
     contentsParts = [
@@ -61,7 +57,7 @@ export async function* generateContentStream(
       ...partsA,
       { text: "--- PAST QUESTIONS ---" },
       ...partsB,
-      { text: "Solve with academic precision. Ensure every single key term, date, and name is BOLDED." }
+      { text: "Solve with academic rigor. Ensure high-detail explanations. Use ==highlights== for final answers and **bold** for key names/dates." }
     ];
   }
 
