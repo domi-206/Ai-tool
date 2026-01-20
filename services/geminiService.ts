@@ -28,14 +28,24 @@ export async function* generateContentStream(
   const partsA = filesA.map(fileToPart);
   const partsB = filesB.map(fileToPart);
 
-  let systemInstruction = "CRITICAL FORMATTING RULE: NEVER use hashtags (#). For headers, use hierarchical numbering (1.0, 1.1). Use double asterisks (e.g., **important text**) to BOLD key points, names, titles, years, specific events, and critical terms. Visual emphasis is mandatory.";
+  let systemInstruction = `CRITICAL FORMATTING RULES:
+1. NEVER use hashtags (#) for formatting.
+2. Use hierarchical numbering for subheadings (e.g., 1.0, 1.1, 2.0). 
+3. Start major sections with 'TOPIC: [Topic Name]' to identify high-level themes.
+4. Use double asterisks (**text**) to BOLD all of the following: 
+   - Important Names and Titles
+   - Dates and Specific Years
+   - Key Answers and Specific Figures
+   - Technical Terms and Core Definitions
+   - Crucial Conclusions
+5. Aim for HIGH visual density of bold text to enable rapid "speed-reading".`;
 
   if (mode === ResultMode.SOLVE) {
-    systemInstruction += ` You are an Intelligent Exam Solver. Solve questions based on the provided material with maximum detail and deep academic reasoning. BOLD all key terms, years, names, and specific answers.`;
+    systemInstruction += `\nROLE: Intelligent Exam Solver. Provide deep academic reasoning. BOLD every final answer and the names of theories/scholars mentioned.`;
   } else if (mode === ResultMode.REVIEW) {
-    systemInstruction += ` You are a FlashCard Doc Generator (FlashDoc). Provide EXHAUSTIVE coverage. Generate many small, direct Q&A pairs. BOLD every key term and direct answer using **.`;
+    systemInstruction += `\nROLE: FlashCard Generator. Provide direct Q&A pairs. BOLD the entire 'Answer' part of every card for maximum visibility.`;
   } else if (mode === ResultMode.SUMMARY) {
-    systemInstruction += ` You are an Expert Academic Simplifier. Provide Deep Definition, Contextual Explanation, Features, and Types. BOLD key concepts throughout.`;
+    systemInstruction += `\nROLE: Academic Simplifier. Use numbered lists. BOLD all key takeaways and definitions.`;
   }
 
   let contentsParts: any[] = [];
@@ -43,7 +53,7 @@ export async function* generateContentStream(
     contentsParts = [
       { text: `--- SOURCE MATERIAL ---` },
       ...partsA,
-      { text: `Analyze this material and generate a ${mode} mode response. NO hashtags. Use ** for bolding.` }
+      { text: `Perform a deep ${mode} analysis. Adhere to all BOLDING and TOPIC rules. Identify every key date and name.` }
     ];
   } else {
     contentsParts = [
@@ -51,7 +61,7 @@ export async function* generateContentStream(
       ...partsA,
       { text: "--- PAST QUESTIONS ---" },
       ...partsB,
-      { text: "Solve all questions in depth. BOLD key years, names, and concepts. NO hashtags." }
+      { text: "Solve with academic precision. Ensure every single key term, date, and name is BOLDED." }
     ];
   }
 
