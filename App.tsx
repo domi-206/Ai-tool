@@ -1,11 +1,11 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Header from './components/Header';
 import FileUpload from './components/FileUpload';
 import ResultDisplay from './components/ResultDisplay';
 import { generateContentStream } from './services/geminiService';
 import { UploadedFile, ProcessingState, ResultMode } from './types';
-import { HelpCircle, Brain, Layers, AlertCircle, BookOpen, FileText, Zap, ScanLine, Loader2, Cpu } from 'lucide-react';
+import { HelpCircle, Brain, Layers, AlertCircle, BookOpen, FileText, ScanLine, Loader2, Cpu, StopCircle, XCircle } from 'lucide-react';
 
 const App: React.FC = () => {
   const [activeView, setActiveView] = useState<'summary' | 'solver'>('solver');
@@ -17,6 +17,8 @@ const App: React.FC = () => {
   const [progress, setProgress] = useState(0);
   const [statusMsg, setStatusMsg] = useState('Initializing AI...');
   
+  const abortControllerRef = useRef<AbortController | null>(null);
+
   const loadingMessages = [
     "Scanning documents for key terms...",
     "Extracting important names and dates...",
@@ -56,6 +58,26 @@ const App: React.FC = () => {
     return () => clearInterval(interval);
   }, [processingState.isLoading, progress]);
 
+  const handleCancel = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+    setIsStreaming(false);
+    
+    // If we're in the full-screen loader without a result yet, reset everything
+    if (processingState.isLoading && !processingState.result) {
+      resetApp();
+    } else {
+      // If we're already streaming, stop and keep the partial text
+      setProcessingState(prev => ({
+        ...prev,
+        isLoading: false,
+        loadingMode: null
+      }));
+    }
+  };
+
   const handleProcess = async (mode: ResultMode) => {
     if (mode === ResultMode.SUMMARY && summaryFiles.length === 0) {
       setProcessingState(prev => ({ ...prev, error: "Upload a document to summarize." }));
@@ -75,17 +97,22 @@ const App: React.FC = () => {
     setProgress(5);
     setStatusMsg('Preparing your analysis engine...');
 
+    // Initialize abort controller for this specific request
+    abortControllerRef.current = new AbortController();
+
     try {
       const filesA = mode === ResultMode.SUMMARY ? summaryFiles : courseFiles;
       const filesB = (mode === ResultMode.SUMMARY || mode === ResultMode.REVIEW) ? [] : questionFiles;
 
-      const stream = generateContentStream(filesA, filesB, mode);
+      const stream = generateContentStream(filesA, filesB, mode, abortControllerRef.current.signal);
       
       let fullText = '';
       let hasStarted = false;
       let chunkCount = 0;
 
       for await (const chunk of stream) {
+        if (abortControllerRef.current?.signal.aborted) break;
+        
         fullText += chunk;
         chunkCount++;
 
@@ -111,6 +138,7 @@ const App: React.FC = () => {
       setStatusMsg('Knowledge Synthesized Successfully!');
       setTimeout(() => setIsStreaming(false), 1000);
     } catch (err: any) {
+      if (err.name === 'AbortError') return;
       setIsStreaming(false);
       setProcessingState({
         isLoading: false,
@@ -118,10 +146,16 @@ const App: React.FC = () => {
         error: err.message || "An unexpected error occurred.",
         result: null
       });
+    } finally {
+      abortControllerRef.current = null;
     }
   };
 
   const resetApp = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
     setProcessingState({ isLoading: false, loadingMode: null, error: null, result: null });
     setIsStreaming(false);
     setProgress(0);
@@ -170,7 +204,16 @@ const App: React.FC = () => {
             <div className="w-40 md:w-72 h-1.5 bg-gray-200 dark:bg-gray-800 rounded-full overflow-hidden mt-2">
                <div className="h-full bg-primary transition-all duration-500" style={{ width: `${progress}%` }}></div>
             </div>
-            <span className="mt-1 text-primary text-[10px] md:text-sm font-bold">{progress}% Complete</span>
+            <div className="flex flex-col items-center mt-6">
+              <span className="text-primary text-[10px] md:text-sm font-bold mb-4">{progress}% Complete</span>
+              <button 
+                onClick={handleCancel}
+                className="flex items-center space-x-2 px-6 py-2.5 bg-gray-100 hover:bg-red-50 dark:bg-gray-800 dark:hover:bg-red-900/10 text-gray-700 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 rounded-full font-bold text-sm transition-all active:scale-95 shadow-sm border border-gray-200 dark:border-gray-700 hover:border-red-200 dark:hover:border-red-800"
+              >
+                <XCircle className="w-4 h-4" />
+                <span>Cancel Generation</span>
+              </button>
+            </div>
           </div>
         )}
 
@@ -184,12 +227,22 @@ const App: React.FC = () => {
         {processingState.result ? (
           <>
             {isStreaming && (
-              <div className="mb-2 bg-white dark:bg-gray-800 rounded-lg p-2 border border-primary/20 flex items-center justify-between shadow-sm">
+              <div className="mb-2 bg-white dark:bg-gray-800 rounded-lg p-2 border border-primary/20 flex items-center justify-between shadow-sm animate-fade-in">
                 <div className="flex items-center gap-2 overflow-hidden">
                   <Loader2 className="w-3 h-3 text-primary animate-spin flex-shrink-0" />
                   <span className="text-[9px] md:text-sm font-medium text-gray-700 dark:text-gray-300 truncate">{statusMsg}</span>
+                  <div className="hidden md:block h-3 w-[1px] bg-gray-200 dark:bg-gray-700 mx-2" />
+                  <span className="hidden md:inline text-[11px] text-gray-500">{progress}%</span>
                 </div>
-                <div className="text-[9px] font-bold text-primary flex-shrink-0 ml-2">{progress}%</div>
+                <div className="flex items-center gap-3">
+                  <button 
+                    onClick={handleCancel}
+                    className="flex items-center gap-1.5 px-3 py-1 rounded-md bg-red-50 dark:bg-red-900/10 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/20 text-[9px] md:text-xs font-bold transition-all active:scale-95"
+                  >
+                    <StopCircle className="w-3 h-3" />
+                    Stop Generation
+                  </button>
+                </div>
               </div>
             )}
             <ResultDisplay 

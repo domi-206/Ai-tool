@@ -1,3 +1,4 @@
+
 import { GoogleGenAI } from "@google/genai";
 import { UploadedFile, ResultMode } from "../types";
 
@@ -13,7 +14,8 @@ const fileToPart = (file: UploadedFile) => {
 export async function* generateContentStream(
   filesA: UploadedFile[],
   filesB: UploadedFile[],
-  mode: ResultMode
+  mode: ResultMode,
+  signal?: AbortSignal
 ): AsyncGenerator<string, void, unknown> {
   
   if (!process.env.API_KEY) {
@@ -66,13 +68,17 @@ export async function* generateContentStream(
         systemInstruction: systemInstruction,
         temperature: 0.1, // Lower temperature for more consistent, factual extraction
       }
-    });
+    }, { signal });
 
     for await (const chunk of responseStream) {
+      if (signal?.aborted) break;
       const text = chunk.text;
       if (text) yield text;
     }
   } catch (error: any) {
+    if (error.name === 'AbortError' || signal?.aborted) {
+      return; // Gracefully exit if aborted
+    }
     console.error("Gemini API Error:", error);
     throw new Error(error.message || "Failed to generate content.");
   }
