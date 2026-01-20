@@ -5,7 +5,7 @@ import FileUpload from './components/FileUpload';
 import ResultDisplay from './components/ResultDisplay';
 import { generateContentStream } from './services/geminiService';
 import { UploadedFile, ProcessingState, ResultMode } from './types';
-import { HelpCircle, Brain, Layers, AlertCircle, BookOpen, FileText, ScanLine, Loader2, Cpu, StopCircle, XCircle } from 'lucide-react';
+import { HelpCircle, Brain, Layers, AlertCircle, BookOpen, FileText, ScanLine, Loader2, Cpu, StopCircle, XCircle, ChevronRight } from 'lucide-react';
 
 const App: React.FC = () => {
   const [activeView, setActiveView] = useState<'summary' | 'solver'>('solver');
@@ -65,11 +65,9 @@ const App: React.FC = () => {
     }
     setIsStreaming(false);
     
-    // If we're in the full-screen loader without a result yet, reset everything
     if (processingState.isLoading && !processingState.result) {
       resetApp();
     } else {
-      // If we're already streaming, stop and keep the partial text
       setProcessingState(prev => ({
         ...prev,
         isLoading: false,
@@ -97,7 +95,6 @@ const App: React.FC = () => {
     setProgress(5);
     setStatusMsg('Preparing your analysis engine...');
 
-    // Initialize abort controller for this specific request
     abortControllerRef.current = new AbortController();
 
     try {
@@ -176,15 +173,15 @@ const App: React.FC = () => {
         toggleTheme={() => setIsDark(!isDark)}
       />
 
-      <main className="max-w-6xl mx-auto px-4 mt-2 md:mt-8">
+      <main className="max-w-6xl mx-auto px-4 mt-4 md:mt-10">
         
         {!processingState.result && !processingState.isLoading && (
-          <div className="text-center mb-3 md:mb-10 animate-fade-in">
-            <h1 className="text-xl md:text-5xl font-extrabold text-gray-900 dark:text-white mb-1 md:mb-3">
+          <div className="text-center mb-6 md:mb-12 animate-fade-in">
+            <h1 className="text-2xl md:text-5xl font-extrabold text-gray-900 dark:text-white mb-2 md:mb-4">
               {activeView === 'summary' ? 'Deep AI Summarizer' : 'UniSpace AI Engine'}
             </h1>
-            <p className="max-w-2xl mx-auto text-[10px] md:text-lg text-gray-500 dark:text-gray-400 leading-tight">
-              Professional precision with key info **bolded** for total mastery.
+            <p className="max-w-2xl mx-auto text-xs md:text-lg text-gray-500 dark:text-gray-400 leading-snug">
+              Upload your documents below. We'll synthesize every detail with **academic precision**.
             </p>
           </div>
         )}
@@ -218,31 +215,29 @@ const App: React.FC = () => {
         )}
 
         {processingState.error && (
-          <div className="mb-3 mx-auto max-w-3xl bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800 rounded-lg p-2 flex items-start animate-fade-in">
-            <AlertCircle className="w-4 h-4 text-red-600 mt-0.5 mr-2" />
-            <p className="text-red-800 dark:text-red-400 text-[10px] md:text-sm">{processingState.error}</p>
+          <div className="mb-4 mx-auto max-w-3xl bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800 rounded-lg p-3 flex items-start animate-fade-in shadow-sm">
+            <AlertCircle className="w-5 h-5 text-red-600 mt-0.5 mr-3 flex-shrink-0" />
+            <p className="text-red-800 dark:text-red-400 text-xs md:text-sm font-medium">{processingState.error}</p>
           </div>
         )}
 
         {processingState.result ? (
           <>
             {isStreaming && (
-              <div className="mb-2 bg-white dark:bg-gray-800 rounded-lg p-2 border border-primary/20 flex items-center justify-between shadow-sm animate-fade-in">
-                <div className="flex items-center gap-2 overflow-hidden">
-                  <Loader2 className="w-3 h-3 text-primary animate-spin flex-shrink-0" />
-                  <span className="text-[9px] md:text-sm font-medium text-gray-700 dark:text-gray-300 truncate">{statusMsg}</span>
-                  <div className="hidden md:block h-3 w-[1px] bg-gray-200 dark:bg-gray-700 mx-2" />
-                  <span className="hidden md:inline text-[11px] text-gray-500">{progress}%</span>
+              <div className="mb-3 bg-white dark:bg-gray-800 rounded-xl p-3 border border-primary/20 flex items-center justify-between shadow-sm animate-fade-in">
+                <div className="flex items-center gap-3 overflow-hidden">
+                  <Loader2 className="w-4 h-4 text-primary animate-spin flex-shrink-0" />
+                  <span className="text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300 truncate tracking-tight">{statusMsg}</span>
+                  <div className="hidden md:block h-4 w-[1px] bg-gray-200 dark:bg-gray-700 mx-1" />
+                  <span className="hidden md:inline text-xs text-primary font-bold">{progress}%</span>
                 </div>
-                <div className="flex items-center gap-3">
-                  <button 
-                    onClick={handleCancel}
-                    className="flex items-center gap-1.5 px-3 py-1 rounded-md bg-red-50 dark:bg-red-900/10 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/20 text-[9px] md:text-xs font-bold transition-all active:scale-95"
-                  >
-                    <StopCircle className="w-3 h-3" />
-                    Stop Generation
-                  </button>
-                </div>
+                <button 
+                  onClick={handleCancel}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-50 dark:bg-red-900/10 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/20 text-xs font-bold transition-all active:scale-95 border border-red-100 dark:border-red-900/30"
+                >
+                  <StopCircle className="w-3.5 h-3.5" />
+                  Stop
+                </button>
               </div>
             )}
             <ResultDisplay 
@@ -253,70 +248,76 @@ const App: React.FC = () => {
             />
           </>
         ) : (
-          <div className={`space-y-3 md:space-y-6 ${!processingState.isLoading ? 'animate-fade-in' : 'opacity-0'}`}>
+          <div className={`space-y-4 md:space-y-8 ${!processingState.isLoading ? 'animate-fade-in' : 'opacity-0'}`}>
             {activeView === 'summary' ? (
-              <div className="max-w-xl mx-auto space-y-3">
-                <div className="h-[150px] md:h-[280px]">
+              <div className="max-w-xl mx-auto space-y-4">
+                <div className="min-h-[220px] md:min-h-[350px]">
                   <FileUpload
                     title="Upload Academic Material"
-                    subtitle="Detailed summary & analysis"
+                    subtitle="PDF, Text, or Images for deep analysis"
                     files={summaryFiles}
                     onFilesAdded={(newFiles) => setSummaryFiles([...newFiles])}
                     onFileRemove={(id) => setSummaryFiles(prev => prev.filter(f => f.id !== id))}
-                    icon={<ScanLine className="w-6 h-6 md:w-10 md:h-10" />}
+                    icon={<ScanLine className="w-8 h-8 md:w-12 md:h-12" />}
                   />
                 </div>
-                <button
-                  onClick={() => handleProcess(ResultMode.SUMMARY)}
-                  disabled={summaryFiles.length === 0}
-                  className="w-full flex items-center justify-center py-2.5 md:py-3.5 text-xs md:text-lg font-bold rounded-xl text-white bg-primary hover:bg-primary-dark transition-all active:scale-[0.98] disabled:opacity-50 shadow-md"
-                >
-                  <FileText className="w-4 h-4 mr-2" />
-                  Generate Detailed Summary
-                </button>
+                {summaryFiles.length > 0 && (
+                  <button
+                    onClick={() => handleProcess(ResultMode.SUMMARY)}
+                    className="w-full group flex items-center justify-center py-3 md:py-5 text-sm md:text-xl font-bold rounded-2xl text-white bg-primary hover:bg-primary-dark transition-all active:scale-[0.98] shadow-lg shadow-primary/20 animate-unfold-up"
+                  >
+                    <FileText className="w-5 h-5 mr-3" />
+                    Generate Detailed Summary
+                    <ChevronRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  </button>
+                )}
               </div>
             ) : (
-              <div className="space-y-3 md:space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-6">
-                  <div className="h-[140px] md:h-[260px]">
+              <div className="space-y-4 md:space-y-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
+                  <div className="min-h-[200px] md:min-h-[320px]">
                     <FileUpload
                       title="1. Course Material"
-                      subtitle="Notes, Slides, etc."
+                      subtitle="Notes, Slides, and References"
                       files={courseFiles}
                       onFilesAdded={(newFiles) => setCourseFiles(prev => [...prev, ...newFiles])}
                       onFileRemove={(id) => setCourseFiles(prev => prev.filter(f => f.id !== id))}
-                      icon={<BookOpen className="w-6 h-6 md:w-10 md:h-10" />}
+                      icon={<BookOpen className="w-8 h-8 md:w-12 md:h-12" />}
                     />
                   </div>
-                  <div className="h-[140px] md:h-[260px]">
+                  <div className="min-h-[200px] md:min-h-[320px]">
                     <FileUpload
                       title="2. Past Questions"
-                      subtitle="Exams for the Engine"
+                      subtitle="Exams for the AI to solve"
                       files={questionFiles}
                       onFilesAdded={(newFiles) => setQuestionFiles(prev => [...prev, ...newFiles])}
                       onFileRemove={(id) => setQuestionFiles(prev => prev.filter(f => f.id !== id))}
-                      icon={<HelpCircle className="w-6 h-6 md:w-10 md:h-10" />}
+                      icon={<HelpCircle className="w-8 h-8 md:w-12 md:h-12" />}
                     />
                   </div>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
-                  <button
-                    onClick={() => handleProcess(ResultMode.SOLVE)}
-                    disabled={courseFiles.length === 0 || questionFiles.length === 0}
-                    className="group flex items-center justify-center py-3 md:py-4 text-xs md:text-lg font-bold rounded-2xl text-white bg-primary hover:bg-primary-dark transition-all active:scale-[0.98] disabled:opacity-50 shadow-lg shadow-primary/20"
-                  >
-                    <Cpu className="w-5 h-5 mr-2" />
-                    Activate AI Engine
-                  </button>
-                  <button
-                    onClick={() => handleProcess(ResultMode.REVIEW)}
-                    disabled={courseFiles.length === 0}
-                    className="group flex items-center justify-center py-3 md:py-4 text-xs md:text-lg font-bold rounded-2xl text-white bg-gray-800 dark:bg-gray-700 hover:bg-gray-900 transition-all active:scale-[0.98] disabled:opacity-50"
-                  >
-                    <Layers className="w-4 h-4 mr-2" />
-                    Generate FlashDoc
-                  </button>
-                </div>
+                
+                {(courseFiles.length > 0 || questionFiles.length > 0) && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-unfold-up pt-2">
+                    <button
+                      onClick={() => handleProcess(ResultMode.SOLVE)}
+                      disabled={courseFiles.length === 0 || questionFiles.length === 0}
+                      className="group flex items-center justify-center py-4 md:py-6 text-sm md:text-xl font-bold rounded-2xl text-white bg-primary hover:bg-primary-dark transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed shadow-xl shadow-primary/30"
+                    >
+                      <Cpu className="w-6 h-6 mr-3" />
+                      Activate AI Engine
+                      <ChevronRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                    </button>
+                    <button
+                      onClick={() => handleProcess(ResultMode.REVIEW)}
+                      disabled={courseFiles.length === 0}
+                      className="group flex items-center justify-center py-4 md:py-6 text-sm md:text-xl font-bold rounded-2xl text-white bg-gray-800 dark:bg-gray-700 hover:bg-gray-900 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <Layers className="w-5 h-5 mr-3" />
+                      Generate FlashDoc
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>

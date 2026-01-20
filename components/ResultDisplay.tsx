@@ -38,150 +38,33 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({ result, onReset, sourceFi
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
     const margin = 20;
-    const footerMargin = 30; // Extra space for footer
-    const maxLineWidth = pageWidth - (margin * 2);
+    const footerMargin = 30;
+    const lineHeight = 7;
     
-    const setNormal = () => {
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(11);
-      doc.setTextColor(40, 40, 40);
-    };
-
-    const setBold = () => {
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(11);
-      doc.setTextColor(0, 0, 0);
-    };
-
-    const addFooterToPage = (pageNum: number, totalPages: number) => {
-      doc.setPage(pageNum);
-      
-      // Footer Line Separator
-      doc.setDrawColor(230, 230, 230);
-      doc.setLineWidth(0.2);
-      doc.line(margin, pageHeight - 25, pageWidth - margin, pageHeight - 25);
-
-      // "A Product of UniSpace" - Bold and Primary-ish color
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(10);
-      doc.setTextColor(7, 188, 12); // Primary Green
-      doc.text("A Product of UniSpace", pageWidth / 2, pageHeight - 18, { align: "center" });
-      
-      // Personalized section
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(8);
-      doc.setTextColor(120, 120, 120);
-      const personalizedFooter = `Prepared exclusively for: ${userName || 'Academic User'}`;
-      doc.text(personalizedFooter, pageWidth / 2, pageHeight - 12, { align: "center" });
-      
-      // Page numbering
-      doc.setFontSize(8);
-      doc.text(`Page ${pageNum} of ${totalPages}`, pageWidth - margin, pageHeight - 12, { align: "right" });
-    };
-
-    let title = 'Document';
-    let toolSuffix = 'UniSpace_Doc';
-    switch (result.mode) {
-      case ResultMode.SOLVE: 
-        title = 'UniSpace AI Engine Solutions'; 
-        toolSuffix = 'UniSpace_AIEngine';
-        break;
-      case ResultMode.REVIEW: 
-        title = 'UniSpace FlashDoc'; 
-        toolSuffix = 'UniSpace_FlashDoc';
-        break;
-      case ResultMode.SUMMARY: 
-        title = 'UniSpace Deep Summary'; 
-        toolSuffix = 'UniSpace_Summary';
-        break;
-    }
-    
-    // Header
     doc.setFont("helvetica", "bold");
     doc.setFontSize(18);
     doc.setTextColor(7, 188, 12); 
-    doc.text(title, margin, 20);
+    doc.text("UniSpace AI Report", margin, 20);
     
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
     doc.setTextColor(100, 100, 100);
-    doc.text(`Official Academic Report | ${new Date().toLocaleDateString()}`, margin, 27);
+    doc.text(`User: ${userName || 'Academic User'} | Date: ${new Date().toLocaleDateString()}`, margin, 27);
     
-    doc.setDrawColor(7, 188, 12);
-    doc.setLineWidth(0.5);
-    doc.line(margin, 32, pageWidth - margin, 32);
-    
-    let cursorY = 45;
-    const lineHeight = 7;
+    let cursorY = 40;
+    const paragraphs = result.text.replace(/#/g, '').split('\n');
 
-    const mainText = result.text.replace(/#/g, '');
-    const paragraphs = mainText.split('\n');
-
-    paragraphs.forEach(paragraph => {
-      if (!paragraph.trim()) {
-        cursorY += lineHeight / 1.5;
-        return;
-      }
-
-      const segments = paragraph.split(/(\*\*.*?\*\*)/g);
-      let currentX = margin;
-
-      segments.forEach(segment => {
-        if (!segment) return;
-        
-        let isBold = false;
-        let content = segment;
-        
-        if (segment.startsWith('**') && segment.endsWith('**')) {
-          isBold = true;
-          content = segment.slice(2, -2);
-        }
-
-        if (isBold) setBold(); else setNormal();
-
-        const words = content.split(/(\s+)/);
-        
-        words.forEach(word => {
-          if (!word) return;
-          const wordWidth = doc.getTextWidth(word);
-          
-          if (currentX + wordWidth > pageWidth - margin) {
-            if (currentX > margin) {
-              cursorY += lineHeight;
-              currentX = margin;
-            }
-
-            // check for page overflow with extra footer room
-            if (cursorY > pageHeight - footerMargin) { 
-              doc.addPage();
-              cursorY = margin + 10;
-              currentX = margin;
-              if (isBold) setBold(); else setNormal();
-            }
-          }
-          
-          doc.text(word, currentX, cursorY);
-          currentX += wordWidth;
-        });
+    paragraphs.forEach(p => {
+      if (!p.trim()) { cursorY += 5; return; }
+      const lines = doc.splitTextToSize(p, pageWidth - margin * 2);
+      lines.forEach((line: string) => {
+        if (cursorY > pageHeight - footerMargin) { doc.addPage(); cursorY = 20; }
+        doc.text(line, margin, cursorY);
+        cursorY += lineHeight;
       });
-      
-      cursorY += lineHeight;
-      currentX = margin;
-      
-      // Check for overflow after paragraph too
-      if (cursorY > pageHeight - footerMargin) {
-        doc.addPage();
-        cursorY = margin + 10;
-      }
     });
 
-    const totalPages = (doc as any).internal.getNumberOfPages();
-    for (let i = 1; i <= totalPages; i++) {
-      addFooterToPage(i, totalPages);
-    }
-
-    const baseName = sourceFileName.replace(/\.[^/.]+$/, "");
-    doc.save(`${baseName}_${toolSuffix}.pdf`);
+    doc.save(`${sourceFileName.split('.')[0]}_Report.pdf`);
   };
 
   return (
@@ -208,23 +91,20 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({ result, onReset, sourceFi
           </div>
 
           <div className="flex items-center gap-2">
-            <div className="relative flex-1 group">
-              <User className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-400 group-focus-within:text-primary transition-colors" />
-              <input 
-                type="text"
-                placeholder="Enter your name..."
-                value={userName}
-                onChange={(e) => setUserName(e.target.value)}
-                className="w-full pl-6 pr-2 py-1.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-[10px] md:text-sm outline-none dark:text-white focus:ring-1 focus:ring-primary/50 focus:border-primary transition-all"
-              />
-            </div>
+            <input 
+              type="text"
+              placeholder="Name for PDF..."
+              value={userName}
+              onChange={(e) => setUserName(e.target.value)}
+              className="pl-3 pr-2 py-1.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-[10px] md:text-sm outline-none dark:text-white focus:border-primary transition-all"
+            />
             <button 
               onClick={handleDownload}
               disabled={isStreaming}
-              className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-[10px] md:text-sm font-bold text-white bg-primary hover:bg-primary-dark transition-all active:scale-95 shadow-sm disabled:opacity-50"
+              className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-[10px] md:text-sm font-bold text-white bg-primary hover:bg-primary-dark transition-all disabled:opacity-50"
             >
               <Download className="w-3.5 h-3.5" />
-              <span>Download PDF</span>
+              <span>PDF</span>
             </button>
           </div>
         </div>
