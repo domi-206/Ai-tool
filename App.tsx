@@ -176,12 +176,12 @@ const App: React.FC = () => {
       <main className="max-w-6xl mx-auto px-4 mt-4 md:mt-10">
         
         {!processingState.result && !processingState.isLoading && (
-          <div className="text-center mb-6 md:mb-12 animate-fade-in">
+          <div className="text-center mb-4 md:mb-10 animate-fade-in">
             <h1 className="text-2xl md:text-5xl font-extrabold text-gray-900 dark:text-white mb-2 md:mb-4">
-              {activeView === 'summary' ? 'Deep AI Summarizer' : 'UniSpace AI Engine'}
+              {activeView === 'summary' ? 'Detailed AI Summarizer' : 'UniSpace AI Engine'}
             </h1>
-            <p className="max-w-2xl mx-auto text-xs md:text-lg text-gray-500 dark:text-gray-400 leading-snug">
-              Upload your documents below. We'll synthesize every detail with **academic precision**.
+            <p className="max-w-2xl mx-auto text-[10px] md:text-lg text-gray-500 dark:text-gray-400 leading-snug px-4">
+              Upload documents below. Deep, detailed synthesis at **academic precision**.
             </p>
           </div>
         )}
@@ -248,13 +248,13 @@ const App: React.FC = () => {
             />
           </>
         ) : (
-          <div className={`space-y-4 md:space-y-8 ${!processingState.isLoading ? 'animate-fade-in' : 'opacity-0'}`}>
+          <div className={`space-y-4 md:space-y-6 ${!processingState.isLoading ? 'animate-fade-in' : 'opacity-0'}`}>
             {activeView === 'summary' ? (
-              <div className="max-w-xl mx-auto space-y-4">
-                <div className="min-h-[220px] md:min-h-[350px]">
+              <div className="max-w-xl mx-auto flex flex-col gap-1.5 md:gap-2">
+                <div className="min-h-[120px] md:min-h-[220px]">
                   <FileUpload
                     title="Upload Academic Material"
-                    subtitle="PDF, Text, or Images for deep analysis"
+                    subtitle="PDF, Text, or Images"
                     files={summaryFiles}
                     onFilesAdded={(newFiles) => setSummaryFiles([...newFiles])}
                     onFileRemove={(id) => setSummaryFiles(prev => prev.filter(f => f.id !== id))}
@@ -264,7 +264,7 @@ const App: React.FC = () => {
                 {summaryFiles.length > 0 && (
                   <button
                     onClick={() => handleProcess(ResultMode.SUMMARY)}
-                    className="w-full group flex items-center justify-center py-3 md:py-5 text-sm md:text-xl font-bold rounded-2xl text-white bg-primary hover:bg-primary-dark transition-all active:scale-[0.98] shadow-lg shadow-primary/20 animate-unfold-up"
+                    className="w-full group flex items-center justify-center py-4 md:py-5 text-sm md:text-lg font-bold rounded-2xl text-white bg-primary hover:bg-primary-dark transition-all active:scale-[0.98] shadow-lg shadow-primary/20 animate-unfold-up"
                   >
                     <FileText className="w-5 h-5 mr-3" />
                     Generate Detailed Summary
@@ -273,22 +273,22 @@ const App: React.FC = () => {
                 )}
               </div>
             ) : (
-              <div className="space-y-4 md:space-y-8">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
-                  <div className="min-h-[200px] md:min-h-[320px]">
+              <div className="space-y-4 md:space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                  <div className="min-h-[160px] md:min-h-[240px]">
                     <FileUpload
                       title="1. Course Material"
-                      subtitle="Notes, Slides, and References"
+                      subtitle="Notes, Slides, References"
                       files={courseFiles}
                       onFilesAdded={(newFiles) => setCourseFiles(prev => [...prev, ...newFiles])}
                       onFileRemove={(id) => setCourseFiles(prev => prev.filter(f => f.id !== id))}
                       icon={<BookOpen className="w-8 h-8 md:w-12 md:h-12" />}
                     />
                   </div>
-                  <div className="min-h-[200px] md:min-h-[320px]">
+                  <div className="min-h-[160px] md:min-h-[240px]">
                     <FileUpload
                       title="2. Past Questions"
-                      subtitle="Exams for the AI to solve"
+                      subtitle="Exams to be solved"
                       files={questionFiles}
                       onFilesAdded={(newFiles) => setQuestionFiles(prev => [...prev, ...newFiles])}
                       onFileRemove={(id) => setQuestionFiles(prev => prev.filter(f => f.id !== id))}
@@ -298,11 +298,11 @@ const App: React.FC = () => {
                 </div>
                 
                 {(courseFiles.length > 0 || questionFiles.length > 0) && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-unfold-up pt-2">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 animate-unfold-up">
                     <button
                       onClick={() => handleProcess(ResultMode.SOLVE)}
                       disabled={courseFiles.length === 0 || questionFiles.length === 0}
-                      className="group flex items-center justify-center py-4 md:py-6 text-sm md:text-xl font-bold rounded-2xl text-white bg-primary hover:bg-primary-dark transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed shadow-xl shadow-primary/30"
+                      className="group flex items-center justify-center py-4 md:py-6 text-sm md:text-lg font-bold rounded-2xl text-white bg-primary hover:bg-primary-dark transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed shadow-xl shadow-primary/30"
                     >
                       <Cpu className="w-6 h-6 mr-3" />
                       Activate AI Engine
@@ -311,7 +311,7 @@ const App: React.FC = () => {
                     <button
                       onClick={() => handleProcess(ResultMode.REVIEW)}
                       disabled={courseFiles.length === 0}
-                      className="group flex items-center justify-center py-4 md:py-6 text-sm md:text-xl font-bold rounded-2xl text-white bg-gray-800 dark:bg-gray-700 hover:bg-gray-900 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="group flex items-center justify-center py-4 md:py-6 text-sm md:text-lg font-bold rounded-2xl text-white bg-gray-800 dark:bg-gray-700 hover:bg-gray-900 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <Layers className="w-5 h-5 mr-3" />
                       Generate FlashDoc
