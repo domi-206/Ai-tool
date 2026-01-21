@@ -47,7 +47,7 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({ result, onReset, sourceFi
     doc.setFont("helvetica", "bold");
     doc.setFontSize(16);
     doc.setTextColor(7, 188, 12); 
-    doc.text("UniSpace AI: Academic Synthesis", margin, 20);
+    doc.text("UniSpace AI: Detailed Academic Synthesis", margin, 20);
     
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
@@ -113,7 +113,7 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({ result, onReset, sourceFi
             if (style === 'highlight') {
               doc.setTextColor(7, 188, 12); 
             } else if (style === 'bold') {
-              doc.setTextColor(0, 0, 0); 
+              doc.setTextColor(0, 0, 0); // Strict black for bold terms
             } else {
               doc.setTextColor(40, 40, 40);
             }
@@ -145,7 +145,7 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({ result, onReset, sourceFi
     });
 
     addBrandedFooter(doc);
-    const toolName = result.mode === ResultMode.SUMMARY ? 'Summary' : result.mode === ResultMode.REVIEW ? 'FlashDoc' : 'AIEngine';
+    const toolName = result.mode === ResultMode.SUMMARY ? 'DetailedSummary' : result.mode === ResultMode.REVIEW ? 'FlashDoc' : 'AIEngine';
     const fileNameBase = (sourceFileName.split('.')[0] || "Synthesis").replace(/[^a-zA-Z0-9]/g, '_');
     doc.save(`${fileNameBase}_UniSpace_${toolName}.pdf`);
   };
@@ -217,7 +217,7 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({ result, onReset, sourceFi
         <div className="flex items-center justify-between bg-primary text-white px-5 py-3 rounded-2xl shadow-xl z-20 transition-all transform animate-fade-in">
           <div className="flex items-center space-x-3">
             <div className="bg-white/20 p-1 rounded-full"><CheckCircle2 className="w-4 h-4" /></div>
-            <span className="font-bold text-xs md:text-sm">Academic Synthesis Complete.</span>
+            <span className="font-bold text-xs md:text-sm">Academic Synthesis Ready.</span>
           </div>
           <button onClick={() => setShowNotification(false)} className="text-white/80 hover:text-white text-[10px] font-bold tracking-widest uppercase">OK</button>
         </div>
@@ -237,11 +237,11 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({ result, onReset, sourceFi
                 {!isStreaming && (
                   <span className="flex items-center bg-primary/10 text-primary text-[8px] md:text-[10px] font-black px-2 py-0.5 rounded-full border border-primary/20 animate-fade-in">
                     <FileCheck className="w-2.5 h-2.5 mr-1" />
-                    VERIFIED
+                    DEEP ANALYSIS COMPLETE
                   </span>
                 )}
               </div>
-              <p className="text-[10px] md:text-xs text-gray-400 font-medium">UniSpace Synthesis v3.5</p>
+              <p className="text-[10px] md:text-xs text-gray-400 font-medium">UniSpace Synthesis v3.6</p>
             </div>
           </div>
 
@@ -275,8 +275,8 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({ result, onReset, sourceFi
                     <FileCheck className="w-4 h-4 text-primary" />
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-gray-800 dark:text-gray-200">Exhaustive Document Analysis</p>
-                    <p className="text-[10px] text-gray-500">Bolding follows term-before-colon formatting. Ready for review.</p>
+                    <p className="text-xs font-bold text-gray-800 dark:text-gray-200">Visual & Mathematical Interpretation Success</p>
+                    <p className="text-[10px] text-gray-500">Summary includes detailed guides for all diagrams and step-by-step logic.</p>
                   </div>
                 </div>
               </div>
@@ -284,7 +284,7 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({ result, onReset, sourceFi
             
             <div className="mb-6 flex gap-2">
                <span className="flex items-center text-[10px] font-bold text-primary bg-primary/10 px-2 py-1 rounded-md">
-                 <div className="w-2 h-2 bg-primary rounded-full mr-2" /> HIGHLIGHTS = KEY INSIGHTS
+                 <div className="w-2 h-2 bg-primary rounded-full mr-2" /> HIGHLIGHTS = KEY RECALL
                </span>
                <span className="flex items-center text-[10px] font-bold text-gray-500 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-md">
                  <div className="w-2 h-2 bg-gray-400 rounded-full mr-2" /> BOLD = TERMS & HEADINGS
@@ -294,7 +294,7 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({ result, onReset, sourceFi
             {isStreaming && (
               <div className="mt-4 flex items-center gap-2">
                 <span className="inline-block w-2.5 h-6 bg-primary animate-pulse rounded-full"></span>
-                <span className="text-xs text-primary font-bold animate-pulse">Deep-analyzing visual and textual data...</span>
+                <span className="text-xs text-primary font-bold animate-pulse">Deconstructing visuals and complex data...</span>
               </div>
             )}
           </div>

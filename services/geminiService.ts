@@ -29,28 +29,30 @@ export async function* generateContentStream(
   const partsB = filesB.map(fileToPart);
 
   let systemInstruction = `CRITICAL ACADEMIC INSTRUCTIONS:
-1. ANALYSIS: Fully analyze all text, explanations, diagrams, drawings, formulas, and calculations.
-2. VISUALS: If diagrams/drawings exist, infer and describe their purpose and components in detail.
-3. CALCULATIONS: For any math/formulas, explain:
-   - The purpose of the calculation.
-   - Step-by-step logic (expressed in words).
-   - Significance of the final result.
-4. BOLDING RULES (STRICT ADHERENCE):
+1. FULL DOCUMENT ANALYSIS: Comprehensively analyze all text, explanations, diagrams, drawings, formulas, equations, and calculations.
+2. VISUAL DATA INTERPRETATION (DEEP ANALYSIS): If the document contains visuals (diagrams, charts, graphs, or drawings):
+   - Infer and explain exactly what they represent in clear, technical language.
+   - Provide a step-by-step explanation of how to interpret the visual data.
+   - For mathematical or scientific charts, explain axes, units, symbols, and trends shown.
+3. CALCULATIONS & FORMULAS: If calculations or formulas are present, explain:
+   - What the calculation is intended to solve.
+   - How it works (provide a step-by-step verbal walkthrough of the logic).
+   - The physical or mathematical meaning of the final result.
+4. BOLD FORMATTING RULES (STRICT ADHERENCE):
    - Bold all **Topic Headings** and **Section Titles**.
-   - Bold **Key Terms**, **Critical Insights**, and **Assumptions**.
-   - DEFINITION FORMAT: Bold the term BEFORE a colon (:) or semicolon (;). DO NOT bold the explanation following it. 
-     Example: "**Photosynthesis**: The process by which plants..."
-5. FORMATTING: Use bold text ONLY for clarity/emphasis. NO italics. NO decorative formatting.
-6. STRUCTURE: Use hierarchical numbering (1.0, 1.1). Write in full, flowing academic paragraphs. Avoid bullet points unless listing specific sequential steps.
-7. LINE COMPLETION: Complete sentences line-by-line. Do not force manual line breaks; allow text to wrap naturally unless starting a new major sub-topic.
-8. NO ASTERISKS: The only allowed asterisks are double markers (**) for bolding. These will be stripped by the UI.`;
+   - Bold **Key Terms**, **Important Phrases**, and **Critical Insights**.
+   - DEFINITION FORMAT: Bold the term BEFORE a colon (:) or semicolon (;). DO NOT bold the explanation that follows.
+     Example: "**Newton's First Law**: An object at rest stays at rest..."
+5. CLARITY & EMPHASIS: Use bold only for clarity. Highlight assumptions and conclusions. NO italics or decorative styling.
+6. STRUCTURE: Use hierarchical numbering (1.0, 1.1). Write in full, flowing academic paragraphs. Complete sentences line-by-line. Let text wrap naturally unless starting a new sub-topic.
+7. NO ASTERISKS: Do not use asterisks (*) for lists. Use numbers (1., 2.). Only use double asterisks (**) for the required bolding.`;
 
   if (mode === ResultMode.SOLVE) {
-    systemInstruction += `\nROLE: Academic Engine. Solve logically. Bold the problem subject before the colon.`;
+    systemInstruction += `\nROLE: Senior Academic Engine. Solve problems with full transparency. Bold the specific subject before the colon.`;
   } else if (mode === ResultMode.REVIEW) {
-    systemInstruction += `\nROLE: Study Pack Creator. Deconstruct concepts. Bold core terms before colons.`;
+    systemInstruction += `\nROLE: Expert Study Pack Creator. Provide exhaustive deconstruction of concepts. Bold core terms before colons.`;
   } else if (mode === ResultMode.SUMMARY) {
-    systemInstruction += `\nROLE: Exhaustive Academic Summarizer. Provide high-density detail. Bold terms before colons.`;
+    systemInstruction += `\nROLE: Master Academic Summarizer. Do not oversimplify. Provide detailed step-by-step interpretations of all visuals and math. Bold terms strictly before colons.`;
   }
 
   let contentsParts: any[] = [];
@@ -58,7 +60,7 @@ export async function* generateContentStream(
     contentsParts = [
       { text: `--- SOURCE MATERIAL ---` },
       ...partsA,
-      { text: `Synthesize an EXHAUSTIVE NARRATIVE. Analyze all visual and mathematical data. Bold terms before colons. No italics.` }
+      { text: `Synthesize an EXHAUSTIVE ACADEMIC SUMMARY. If there are any diagrams, charts, or visual data, provide a step-by-step explanation of how to interpret them. Explain all formulas step-by-step in words. Bold terms strictly before colons. No italics.` }
     ];
   } else {
     contentsParts = [
@@ -66,7 +68,7 @@ export async function* generateContentStream(
       ...partsA,
       { text: "--- PAST QUESTIONS ---" },
       ...partsB,
-      { text: "Solve with academic rigor. Include full verbal explanations of calculations. Bold concepts before colons." }
+      { text: "Solve with maximum academic rigor. Provide a full verbal interpretation of all visual or mathematical data in the questions. Bold concepts before colons." }
     ];
   }
 
