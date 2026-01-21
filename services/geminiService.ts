@@ -22,8 +22,11 @@ export async function* generateContentStream(
     throw new Error("API Key not detected. Ensure 'process.env.API_KEY' is configured in your environment.");
   }
 
+  // Initialize inside the function to ensure the latest API key is used
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-  const model = 'gemini-3-pro-preview';
+  
+  // Using gemini-3-flash-preview for higher availability and to resolve 404 "Not Found" errors
+  const model = 'gemini-3-flash-preview';
 
   const partsA = filesA.map(fileToPart);
   const partsB = filesB.map(fileToPart);
@@ -78,6 +81,12 @@ export async function* generateContentStream(
     }
   } catch (error: any) {
     if (error.name === 'AbortError' || signal?.aborted) return;
+    
+    // Specific check for model not found errors often caused by API key permission mismatches
+    if (error.message?.includes('404') || error.message?.includes('not found')) {
+      throw new Error(`Model Error: The selected model (${model}) was not found with your current API key. Please ensure your API key has access to Gemini 3 models or try a different key.`);
+    }
+    
     throw new Error(error.message || "Failed to generate content.");
   }
 }
